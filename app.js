@@ -1,58 +1,75 @@
 const userInput = document.getElementById('user-input');
 const searchButton = document.getElementById('search');
-const apiCall = fetch(
-  'http://www.omdbapi.com/?s=Blade+Runner&type=movie&plot=full&apikey=d63e1fcd'
-);
+const main = document.querySelector('main');
+const favoriteMovies = []
 
-function fetchData(userSearch) {
+
+// send API call
+async function fetchData(userSearch) {
+  let searchOutput = [];
   const movieId = [];
-  const movieData = [];
-  const apiCall = fetch(
+  const movieInfo = [];
+  const response = await fetch(
     `http://www.omdbapi.com/?s=${userSearch}&type=movie&plot=full&apikey=d63e1fcd`
   );
-  // fetch the info that the user searches with the API search query
-  apiCall
-    // turn into json
-    .then((res) => res.json())
-    .then((data) => {
-      // push the ID of the item into the movieId Array
-      data.Search.forEach((item) => {
-        movieId.push(item.imdbID);
-      });
-      // then for each id call the api again so you can access more info on the film
-      movieId.forEach((id) => {
-        fetch(
-          `http://www.omdbapi.com/?i=${id}&type=movie&plot=full&r=json&apikey=d63e1fcd`
-        )
-          .then((res) => res.json())
-          .then((data) => {
-            movieData.push(data);
-            if (movieData.length >= 10) {
-              console.log(movieData);
-            }
-          });
-      });
-    });
+  const data = await response.json();
+  searchOutput = data.Search;
+  // console.log(searchOutput);
+  searchOutput.forEach((item) => movieId.push(item.imdbID));
+  // console.log(movieId)
+
+  // use await and promise.all to loop over all the promises and what ever is needed
+  await Promise.all(
+    movieId.map(async (item) => {
+      const response = await fetch(
+        `http://www.omdbapi.com/?i=${item}&type=movie&plot=short&apikey=d63e1fcd`
+      );
+      const data = await response.json();
+      if (data.Poster !== 'N/A' && data.Plot !== 'N/A') {
+        movieInfo.push(await data);
+      }
+    })
+  );
+  // console.log('Complete Movie info!', movieInfo);
+  return movieInfo;
 }
 
-function renderData() {
-  const main = document.querySelector('main');
+// display the info on the dom
+function renderData(arr) {
+  arr.map((movie) => {
+    const div = document.createElement('div')
+    const h3 = document.createElement('h3')
+    const p = document.createElement('p')
+    const img = document.createElement('img')
+    const button = document.createElement('button')
+    main.append(div)
+    div.append(h3)
+    h3.textContent = movie.Title
+    div.append(img)
+    img.setAttribute("src", `${movie.Poster}`)
+    div.append(p)
+    p.textContent = movie.Plot
+    div.append(button)
+    button.textContent = 'Add to Favorites!'
 
-  // main.innerHTML += `<h3>${item.Title}</h3>
-  // <img class="poster" src="${item.Poster}">
-  // <button>Add to Favorites</button>
-  // `
-}
+    button.addEventListener('click', () => {
+      // console.log(movie)
+      favoriteMovies.push(movie)
+      // console.log(favoriteMovies)
+    })
+    })
 
-searchButton.addEventListener('click', () => {
-  fetchData(userInput.value);
+  }
+
+
+// user searches movie
+searchButton.addEventListener('click', async () => {
+  main.innerHTML = ''
+  // needs await
+  renderData(await fetchData(userInput.value));
 });
 
-
 //   todo
-// user searches movie or show
-// send API call
-// display the info on the dom
 // allow users to save the info
 // watchlist page
 // append the movies from the localstorage and dispaly to them dom

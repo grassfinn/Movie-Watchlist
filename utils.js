@@ -5,7 +5,7 @@ async function fetchData(userSearch) {
   const movieId = [];
   const movieInfo = [];
   const response = await fetch(
-    `http://www.omdbapi.com/?s=${userSearch}&type=movie&plot=full&apikey=d63e1fcd`
+    `https://www.omdbapi.com/?s=${userSearch}&type=movie&plot=full&apikey=d63e1fcd`
   );
   const data = await response.json();
   searchOutput = data.Search;
@@ -15,7 +15,7 @@ async function fetchData(userSearch) {
   await Promise.all(
     movieId.map(async (item) => {
       const response = await fetch(
-        `http://www.omdbapi.com/?i=${item}&type=movie&plot=short&apikey=d63e1fcd`
+        `https://www.omdbapi.com/?i=${item}&type=movie&plot=short&apikey=d63e1fcd`
       );
       const data = await response.json();
       if (

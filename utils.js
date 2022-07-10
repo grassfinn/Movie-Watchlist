@@ -1,4 +1,3 @@
-import favoriteMovies from './app.js'
 // send API call
 async function fetchData(userSearch) {
   let searchOutput = [];
